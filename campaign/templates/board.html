@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ b.brand_name }} - {{ b.concept_name }}</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Inter:wght@400;500&display=swap">
+<style>
+  :root { --bg: #f4efe8; --ink: #1e1a17; --muted: #6f655c; --line: #ddd3c6; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 Inter, system-ui, sans-serif; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 32px 16px 80px; }
+  h1, h2, .serif { font-family: "Cormorant Garamond", Georgia, serif; font-weight: 400; }
+  h1 { font-size: clamp(36px, 6vw, 64px); line-height: 1; margin: 0 0 8px; letter-spacing: .02em; }
+  .kicker, h3 { font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); font-weight: 500; margin: 0 0 12px; }
+  h3 b { color: var(--ink); font-weight: 600; }
+  .notice { background: #fff6e0; border: 1px solid #ecd9a8; padding: 10px 14px; border-radius: 8px; margin-bottom: 24px; font-size: 14px; }
+  .concept { display: grid; grid-template-columns: 2fr 1fr; gap: 32px; margin-bottom: 40px; align-items: end; }
+  .palette { display: flex; gap: 8px; }
+  .palette span { flex: 1; height: 56px; border-radius: 6px; border: 1px solid var(--line); }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 56px; }
+  .tile { position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: #ddd; }
+  .tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .tile .label { position: absolute; top: 14px; left: 16px; color: #fff; text-shadow: 0 1px 8px rgba(0,0,0,.35); }
+  .tile .label .n { font-family: "Cormorant Garamond", Georgia, serif; font-size: 34px; line-height: 1; }
+  .tile .label .r { font-size: 12px; letter-spacing: .2em; }
+  .tile .closing { position: absolute; right: 22px; bottom: 22px; text-align: right; color: #fff; text-shadow: 0 1px 10px rgba(0,0,0,.4); }
+  .tile .closing .serif { font-size: clamp(22px, 3vw, 40px); letter-spacing: .12em; text-transform: uppercase; }
+  .tile .closing small { letter-spacing: .25em; text-transform: uppercase; font-size: 11px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 56px; }
+  .ads { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .ads img { width: 100%; display: block; border-radius: 6px; }
+  .ads p { font-size: 13px; color: var(--muted); margin: 8px 2px 0; }
+  .banner { position: relative; aspect-ratio: 16 / 7; overflow: hidden; border-radius: 8px; color: #fff; }
+  .banner img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .banner::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(20,16,13,.65), rgba(20,16,13,0) 65%); }
+  .banner .in { position: relative; z-index: 1; padding: clamp(16px, 4vw, 40px); height: 100%; display: flex; flex-direction: column; }
+  .banner nav { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; }
+  .banner nav .menu { display: flex; gap: 24px; }
+  .banner h2 { font-size: clamp(30px, 5vw, 60px); line-height: 1; margin: auto 0 10px; max-width: 60%; }
+  .banner p { max-width: 42%; font-size: 14px; margin: 0 0 18px; }
+  .btns { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn { display: inline-block; padding: 11px 20px; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; border: 1px solid currentColor; }
+  .btn.fill { background: #fff; color: var(--ink); border-color: #fff; }
+  .emails { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; }
+  .emails iframe { width: 100%; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+  .emails .mobile iframe { width: 340px; border-radius: 28px; border: 8px solid #fff; box-shadow: 0 4px 24px rgba(0,0,0,.08); }
+  .meta { font-size: 13px; color: var(--muted); margin: 8px 0 0; }
+  .captions { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 24px; }
+  .captions .n { font-size: 12px; letter-spacing: .15em; color: var(--muted); }
+  .captions p { margin: 4px 0; }
+  .captions .tags { font-size: 12px; color: var(--muted); }
+  .dl { display: inline-block; margin-top: 16px; padding: 12px 20px; background: var(--ink); color: var(--bg); text-decoration: none; font-size: 12px; letter-spacing: .15em; text-transform: uppercase; }
+  @media (max-width: 860px) {
+    .concept, .two, .emails { grid-template-columns: 1fr; }
+    .emails .mobile iframe { width: 100%; }
+    .banner { aspect-ratio: 4 / 5; }
+    .banner h2, .banner p { max-width: 100%; }
+    .banner nav .menu { display: none; }
+  }
+  @media (max-width: 560px) { .grid, .ads { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  {% if demo_text or demo_images %}
+  <div class="notice">Demo režimas:
+    {% if demo_text %}tekstai yra pavyzdiniai (nėra ANTHROPIC_API_KEY){% endif %}{% if demo_text and demo_images %}; {% endif %}
+    {% if demo_images %}vaizdai yra maketai su jūsų produktu (nėra GEMINI_API_KEY){% endif %}.
+  </div>
+  {% endif %}
+
+  <section class="concept">
+    <div>
+      <p class="kicker">{{ b.brand_name }} · {{ b.product_name }}</p>
+      <h1>{{ b.concept_name }}</h1>
+      <p>{{ b.concept_summary }}</p>
+      <a class="dl" href="campaign.zip" download>Download campaign (ZIP)</a>
+    </div>
+    <div>
+      <h3>Palette</h3>
+      <div class="palette">{% for c in b.palette %}<span style="background: {{ c }}" title="{{ c }}"></span>{% endfor %}</div>
+      <p class="meta">{{ b.location }} · {{ b.wardrobe }}</p>
+    </div>
+  </section>
+
+  <div class="grid">
+    {% for s, f in shots %}
+    <div class="tile">
+      <img src="{{ f }}" alt="{{ s.role }}">
+      <div class="label"><div class="n">{{ '%02d' % loop.index }}</div><div class="r">{{ s.role }}</div></div>
+      {% if loop.last and loop.length > 1 %}
+      <div class="closing"><div class="serif">{{ b.brand_name }}</div><small>{{ b.tagline }}</small></div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="two">
+    <section>
+      <h3><b>Meta ads</b> ({{ ads|length }} variations)</h3>
+      <div class="ads">
+        {% for a, f in ads %}
+        <div><a href="{{ f }}" download><img src="{{ f }}" alt="{{ a.headline }}"></a><p>{{ a.primary_text }}</p></div>
+        {% endfor %}
+      </div>
+    </section>
+    <section>
+      <h3><b>Website hero banner</b></h3>
+      <div class="banner">
+        <img src="{{ banner_file }}" alt="">
+        <div class="in">
+          <nav><span>{{ b.brand_name }}</span><span class="menu"><span>Shop</span><span>The story</span><span>Journal</span><span>Cart (0)</span></span></nav>
+          <h2>{{ b.banner.headline }}</h2>
+          <p>{{ b.banner.subline }}</p>
+          <div class="btns"><span class="btn fill">{{ b.banner.cta_primary }}</span><span class="btn">{{ b.banner.cta_secondary }}</span></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section style="margin-bottom: 56px">
+    <h3><b>Email campaign</b> (desktop + mobile)</h3>
+    <p class="meta" style="margin: -4px 0 12px">Subject: {{ b.email.subject }} · Preheader: {{ b.email.preheader }}</p>
+    <div class="emails">
+      <iframe src="email.html" height="1180" title="Email desktop"></iframe>
+      <div class="mobile"><iframe src="email.html" height="1180" title="Email mobile"></iframe></div>
+    </div>
+  </section>
+
+  <section>
+    <h3><b>Social captions</b></h3>
+    <div class="captions">
+      {% for s, f in shots %}
+      <div><div class="n">{{ '%02d' % loop.index }} {{ s.role }}</div><p>{{ s.caption }}</p><div class="tags">{{ s.hashtags|join(' ') }}</div></div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+</body>
+</html>

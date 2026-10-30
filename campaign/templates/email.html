@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ b.email.subject }}</title>
+<style>
+  body { margin: 0; padding: 0; background: #f4efe8; }
+  img { border: 0; display: block; max-width: 100%; height: auto; }
+  @media (max-width: 600px) {
+    .container { width: 100% !important; }
+    .menu { display: none !important; }
+    .stack, .stack td { display: block !important; width: 100% !important; }
+    .hero-title { font-size: 34px !important; }
+    .pad { padding-left: 20px !important; padding-right: 20px !important; }
+  }
+</style>
+</head>
+<body>
+<div style="display:none;max-height:0;overflow:hidden;">{{ b.email.preheader }}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4efe8;">
+<tr><td align="center" style="padding:24px 0;">
+  <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" style="width:600px;background:#fbf8f4;font-family:Georgia,'Times New Roman',serif;color:#1e1a17;">
+    <tr><td align="center" style="padding:28px 20px 14px;font-size:20px;letter-spacing:6px;text-transform:uppercase;">{{ b.brand_name }}</td></tr>
+    <tr><td class="menu" align="center" style="padding:0 0 18px;font-family:Arial,sans-serif;font-size:10px;letter-spacing:3px;color:#6f655c;">SHOP &nbsp;&nbsp;&nbsp; THE STORY &nbsp;&nbsp;&nbsp; JOURNAL</td></tr>
+    <tr><td><img src="{{ banner_file }}" width="600" alt="{{ b.email.hero_headline }}" style="width:100%;"></td></tr>
+    <tr><td class="pad" align="center" style="padding:32px 48px 8px;">
+      <div class="hero-title" style="font-size:44px;line-height:1.05;">{{ b.email.hero_headline }}</div>
+    </td></tr>
+    <tr><td class="pad" align="center" style="padding:8px 64px 24px;font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:#4a423b;">{{ b.email.hero_text }}</td></tr>
+    <tr><td align="center" style="padding:0 0 40px;">
+      <a href="#" style="display:inline-block;background:#1e1a17;color:#fbf8f4;font-family:Arial,sans-serif;font-size:11px;letter-spacing:3px;text-decoration:none;padding:14px 28px;text-transform:uppercase;">{{ b.email.cta }}</a>
+    </td></tr>
+    <tr><td style="padding:0 24px 40px;">
+      <table role="presentation" class="stack" width="100%" cellpadding="0" cellspacing="0"><tr>
+        <td width="46%" valign="middle"><img src="{{ detail_file }}" alt="" style="width:100%;"></td>
+        <td width="54%" valign="middle" style="padding:16px 8px 16px 24px;">
+          <div style="font-size:28px;line-height:1.1;margin-bottom:12px;">{{ b.email.section_title }}</div>
+          <div style="font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:#4a423b;">{{ b.email.section_text }}</div>
+        </td>
+      </tr></table>
+    </td></tr>
+    <tr><td align="center" style="padding:24px;border-top:1px solid #e5ddd2;font-family:Arial,sans-serif;font-size:10px;letter-spacing:2px;color:#8a8077;">{{ b.brand_name|upper }} · {{ b.tagline|upper }}<br><br><a href="#" style="color:#8a8077;">Unsubscribe</a></td></tr>
+  </table>
+</td></tr>
+</table>
+</body>
+</html>

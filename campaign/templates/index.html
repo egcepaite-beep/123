@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="lt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Campaign Studio</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Inter:wght@400;500&display=swap">
+<style>
+  :root { --bg: #f4efe8; --ink: #1e1a17; --muted: #6f655c; --line: #ddd3c6; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 Inter, system-ui, sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 48px 16px; }
+  h1 { font: 400 clamp(38px, 7vw, 60px)/1 "Cormorant Garamond", Georgia, serif; margin: 0 0 8px; }
+  .lead { color: var(--muted); margin: 0 0 32px; }
+  label { display: block; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 20px 0 6px; }
+  input[type=text], textarea, select { width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: #fff; font: inherit; color: inherit; }
+  textarea { min-height: 120px; resize: vertical; }
+  .drops { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .drop { position: relative; border: 1px dashed #bfb2a2; border-radius: 8px; background: #fbf8f4; aspect-ratio: 4 / 5; display: flex; align-items: center; justify-content: center; text-align: center; padding: 12px; color: var(--muted); cursor: pointer; overflow: hidden; }
+  .drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .drop img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #fff; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  button { margin-top: 28px; width: 100%; padding: 16px; background: var(--ink); color: var(--bg); border: 0; font: 500 13px Inter, sans-serif; letter-spacing: .18em; text-transform: uppercase; cursor: pointer; border-radius: 4px; }
+  button:disabled { opacity: .5; cursor: default; }
+  .status { margin-top: 18px; min-height: 24px; }
+  .status.err { color: #a3322a; }
+  .mode { font-size: 13px; background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; }
+  @media (max-width: 520px) { .drops, .row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Campaign Studio</h1>
+  <p class="lead">Įkelkite produkto nuotrauką ir gausite 360 kampaniją: socialinių tinklų įrašus, Meta reklamas, svetainės banerį ir email laišką viename stiliuje.</p>
+  {% if not (live_text and live_images) %}
+  <p class="mode">Demo režimas:
+    {% if not live_text %}nėra <code>ANTHROPIC_API_KEY</code> (tekstai bus pavyzdiniai){% endif %}{% if not live_text and not live_images %}; {% endif %}
+    {% if not live_images %}nėra <code>GEMINI_API_KEY</code> (vaizdai bus maketai su jūsų produktu){% endif %}.
+  </p>
+  {% endif %}
+
+  <form id="f">
+    <div class="drops">
+      <div><label>Produkto nuotrauka *</label>
+        <div class="drop" id="d-product"><span>Spustelėkite arba nutempkite</span><input type="file" name="product" accept="image/*" required></div></div>
+      <div><label>Stiliaus pavyzdys (nebūtina)</label>
+        <div class="drop" id="d-style"><span>Mood / reference nuotrauka</span><input type="file" name="style" accept="image/*"></div></div>
+    </div>
+
+    <label for="brand">Prekės ženklas</label>
+    <input type="text" id="brand" name="brand" placeholder="Jei tuščia, bus perskaitytas nuo etiketės">
+
+    <label for="notes">Apie produktą ir kampaniją</label>
+    <textarea id="notes" name="notes" placeholder="Produkto istorija, natos, auditorija, nuotaika..."></textarea>
+
+    <div class="row">
+      <div><label for="num_posts">Įrašų kiekis</label>
+        <select id="num_posts" name="num_posts">{% for n in range(3, 10) %}<option {% if n == 9 %}selected{% endif %}>{{ n }}</option>{% endfor %}</select></div>
+      <div><label for="language">Kalba</label>
+        <select id="language" name="language"><option>English</option><option>Lithuanian</option></select></div>
+    </div>
+
+    <button id="go">Kurti kampaniją</button>
+    <div class="status" id="status" role="status"></div>
+  </form>
+</main>
+<script>
+  for (const id of ["d-product", "d-style"]) {
+    const box = document.getElementById(id), input = box.querySelector("input");
+    input.addEventListener("change", () => {
+      box.querySelector("img")?.remove();
+      if (!input.files[0]) return;
+      const img = document.createElement("img");
+      img.src = URL.createObjectURL(input.files[0]);
+      box.prepend(img);
+    });
+  }
+  const form = document.getElementById("f"), status = document.getElementById("status"), go = document.getElementById("go");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    go.disabled = true; status.className = "status"; status.textContent = "Siunčiama...";
+    const res = await fetch("/generate", { method: "POST", body: new FormData(form) });
+    const data = await res.json();
+    if (!res.ok) { status.className = "status err"; status.textContent = data.error; go.disabled = false; return; }
+    const poll = async () => {
+      const s = await (await fetch("/status/" + data.job)).json();
+      if (s.status === "done") { location.href = "/c/" + data.job + "/"; return; }
+      if (s.status === "error") { status.className = "status err"; status.textContent = "Klaida: " + s.error; go.disabled = false; return; }
+      status.textContent = s.step + "...";
+      setTimeout(poll, 1500);
+    };
+    poll();
+  });
+</script>
+</body>
+</html>
