@@ -38,10 +38,15 @@ body = cut.copy(); body.putalpha(ImageChops.multiply(cut.getchannel('A'), ImageC
 lid.save(f'{out}/lid.webp', 'WEBP', quality=90, method=6)
 body.save(f'{out}/body.webp', 'WEBP', quality=90, method=6)
 print('lid ok')
-# dark "inside of the head", seen only while the lid is lifted
-inside = Image.new('RGBA', (W, H), (0, 0, 0, 0))
-ia = ImageChops.multiply(cut.getchannel('A'), lm).point(lambda v: 255 if v > 40 else 0)
-ia = ImageChops.multiply(ia, Image.linear_gradient('L').resize((W, H)).point(lambda v: 255 if v > 150 / H * 255 * 0.55 else 0))
-inside.paste((24, 12, 14, 255), (0, 0), ia.filter(ImageFilter.GaussianBlur(1)))
+# dark "inside of the head", seen only while the lid is lifted: follows the lid's own shape,
+# darkest at the cut line and fading out towards the crown
+inside = Image.new('RGBA', (W, H), (24, 12, 14, 0))
+grad = Image.new('L', (W, H), 0)
+gd = ImageDraw.Draw(grad)
+for y in range(H):
+    gd.line([(0, y), (W, y)], fill=int(255 * min(1, max(0, (y - 40) / 90))))
+ia = ImageChops.multiply(cut.getchannel('A'), lm)
+ia = ImageChops.multiply(ia.point(lambda v: 255 if v > 40 else 0), grad).filter(ImageFilter.GaussianBlur(1.5))
+inside.putalpha(ia)
 inside.save(f'{out}/inside.webp', 'WEBP', quality=90, method=6)
 print('inside ok')
