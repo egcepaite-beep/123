@@ -23,3 +23,25 @@ cav = cav.filter(ImageFilter.GaussianBlur(1.2))
 for name,img in (('full',cut),('head',head),('jaw',jaw),('mouth',cav)):
     img.save(f'{out}/{name}.webp', 'WEBP', quality=90, method=6)
 print('ok')
+
+# --- "open head" variant: zig-zag cut through the hair above the forehead ---
+import math
+pts = [(0, 150)]
+x, k = 0, 0
+while x < W:
+    x = min(W, x + 22); k += 1
+    pts.append((x, 150 + (9 if k % 2 else -9) + int(10 * math.sin(x / 90))))
+lid_poly = [(0, 0), (W, 0)] + list(reversed(pts))
+lm = Image.new('L', (W, H), 0); ImageDraw.Draw(lm).polygon(lid_poly, fill=255)
+lid = cut.copy(); lid.putalpha(ImageChops.multiply(cut.getchannel('A'), lm))
+body = cut.copy(); body.putalpha(ImageChops.multiply(cut.getchannel('A'), ImageChops.invert(lm)))
+lid.save(f'{out}/lid.webp', 'WEBP', quality=90, method=6)
+body.save(f'{out}/body.webp', 'WEBP', quality=90, method=6)
+print('lid ok')
+# dark "inside of the head", seen only while the lid is lifted
+inside = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+ia = ImageChops.multiply(cut.getchannel('A'), lm).point(lambda v: 255 if v > 40 else 0)
+ia = ImageChops.multiply(ia, Image.linear_gradient('L').resize((W, H)).point(lambda v: 255 if v > 150 / H * 255 * 0.55 else 0))
+inside.paste((24, 12, 14, 255), (0, 0), ia.filter(ImageFilter.GaussianBlur(1)))
+inside.save(f'{out}/inside.webp', 'WEBP', quality=90, method=6)
+print('inside ok')
