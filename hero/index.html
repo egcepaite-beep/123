@@ -1,0 +1,271 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kalbanti galva</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter+Tight:wght@400;500;600&display=swap">
+<style>
+  /* Layout: one full-screen stage. Layered portrait in the centre, cards fly out of the mouth / top of head
+     into fixed left/right slots, client marquee runs along the bottom. Single light look on purpose. */
+  :root {
+    color-scheme: light;
+    --paper: #E8E7E4;
+    --ink: #151514;
+    --muted: #6B6A66;
+    --blue: #2F5BD3;
+    --mustard: #D39A27;
+    --coral: #DE5536;
+    --green: #2F6B4E;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-ui: "Inter Tight", "Inter", system-ui, sans-serif;
+    /* card unit: scales with the smaller of width and height so the slot layout never collides */
+    --u: min(1vw, 1.6svh);
+  }
+  @media (max-width: 720px) { :root { --u: 2.4vw; } }
+
+  html, body { height: 100%; }
+  body { background: var(--paper); color: var(--ink); font-family: var(--font-ui); overflow-x: hidden; }
+
+  .stage { position: relative; height: 100svh; min-height: 560px; overflow: hidden; isolation: isolate; }
+
+  /* nav */
+  .nav {
+    position: absolute; inset: 0 0 auto; z-index: 20;
+    display: flex; justify-content: space-between; align-items: center;
+    padding-block: 22px;
+    padding-left: max(28px, env(safe-area-inset-left, 0px));
+    padding-right: max(28px, env(safe-area-inset-right, 0px));
+    font-size: 15px; letter-spacing: .01em;
+  }
+  .nav .who { font-weight: 600; }
+  .nav .who span { color: var(--muted); font-weight: 400; }
+  .nav ul { display: flex; gap: 28px; list-style: none; margin: 0; padding: 0; }
+  .nav a { color: var(--ink); text-decoration: none; font-size: 22px; }
+  .nav a:hover, .nav a:focus-visible { text-decoration: underline; text-underline-offset: 4px; outline: none; }
+
+  /* portrait layers: identical boxes stacked, so the cards can slide in between them */
+  .layer {
+    position: absolute; left: 50%; top: 14svh; translate: -50% 0;
+    width: min(48vw, 80svh); aspect-ratio: 646 / 568;
+    pointer-events: none; user-select: none;
+  }
+  .layer img { width: 100%; height: 100%; display: block; filter: grayscale(1) contrast(1.12) brightness(1.03); }
+  /* the white die-cut outline is drawn once, around the whole silhouette */
+  .sticker img {
+    filter: grayscale(1) contrast(1.12) brightness(1.03)
+            drop-shadow(4px 0 0 #fff) drop-shadow(-4px 0 0 #fff)
+            drop-shadow(0 4px 0 #fff) drop-shadow(0 -4px 0 #fff)
+            drop-shadow(0 0 .6px rgba(0,0,0,.55)) drop-shadow(0 10px 18px rgba(0,0,0,.08));
+  }
+  #outline { z-index: 0; }
+  #mouth { z-index: 1; }
+  #head  { z-index: 3; }
+  #jaw   { z-index: 5; }
+  /* thin paper-cut seam on the jaw piece only */
+  #jaw img { transform-origin: 45% 53%;
+    filter: grayscale(1) contrast(1.12) brightness(1.03) drop-shadow(0 0 .7px rgba(255,255,255,.95)) drop-shadow(0 1px 1px rgba(0,0,0,.25)); }
+
+  /* slots + cards */
+  .slot { position: absolute; translate: -50% -50%; z-index: 7; }
+  .slot[data-type="L"] { width: calc(var(--u) * 19);   height: calc(var(--u) * 12); }
+  .slot[data-type="P"] { width: calc(var(--u) * 11.5); height: calc(var(--u) * 15); }
+  .slot[data-type="S"] { width: calc(var(--u) * 14);   height: calc(var(--u) * 13); }
+  .card {
+    position: absolute; inset: 0; border-radius: 14px; overflow: hidden;
+    background: #222; color: #fff;
+    box-shadow: 0 1px 0 rgba(255,255,255,.6) inset, 0 14px 30px -12px rgba(20,18,14,.45), 0 2px 6px rgba(20,18,14,.15);
+    transition: scale .25s ease;
+    will-change: transform;
+  }
+  .card:hover { scale: 1.06; }
+  .card img { width: 100%; height: 100%; object-fit: cover; display: block; animation: kenburns 9s ease-in-out infinite alternate; }
+  .card .cap {
+    position: absolute; left: 10px; bottom: 9px; right: 10px;
+    font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+    text-shadow: 0 1px 6px rgba(0,0,0,.45);
+  }
+  .card .big { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 10px;
+    font-family: var(--font-display); font-size: calc(var(--u) * 2.6); line-height: .95; text-transform: uppercase; }
+  .card.t1 { background: linear-gradient(135deg, #F2C14E, #DE5536); }
+  .card.t2 { background: radial-gradient(circle at 30% 25%, #9DB6FF, #2F5BD3 60%, #1B2F78); }
+  .card.t3 { background: #2F6B4E; }
+  .card.t4 { background: linear-gradient(160deg, #F6D7D0, #E58D7A); color: #3a1610; }
+  .card.t5 { background: #151514; }
+  .card.t5 .big { color: #D39A27; }
+  .card .rec { position: absolute; top: 9px; left: 10px; display: flex; gap: 5px; align-items: center; font-size: 10px; font-weight: 600; letter-spacing: .08em; }
+  .card .rec::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #ff3b30; animation: blink 1.2s steps(2) infinite; }
+  @keyframes kenburns { from { transform: scale(1.02); } to { transform: scale(1.14) translate(-2%, -2%); } }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* marquee */
+  .marquee { position: absolute; left: 0; right: 0; bottom: -0.12em; z-index: 6; overflow: hidden;
+    font-family: var(--font-display); font-size: 15vw; line-height: 1; text-transform: uppercase; pointer-events: none; }
+  .marquee .track { display: flex; width: max-content; animation: slide 38s linear infinite; }
+  .marquee span { padding-right: .28em; white-space: nowrap; }
+  .marquee .c1 { color: var(--blue); } .marquee .c2 { color: var(--mustard); }
+  .marquee .c3 { color: var(--coral); } .marquee .c4 { color: var(--green); }
+  @keyframes slide { to { transform: translateX(-50%); } }
+
+  @media (max-width: 720px) {
+    .layer { width: 96vw; top: 12svh; }
+    .nav a { font-size: 17px; } .nav ul { gap: 16px; } .nav .who span { display: none; }
+    .marquee { font-size: 26vw; }
+    .card .big { font-size: calc(var(--u) * 3); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .marquee .track, .card img, .card .rec::before { animation: none; }
+  }
+</style>
+
+<main class="stage" id="stage">
+  <nav class="nav" aria-label="Pagrindinis meniu">
+    <div class="who">Jūsų Vardas <span>· turinio kūrėja</span></div>
+    <ul><li><a href="#projektai">Projektai</a></li><li><a href="#kontaktai">Kontaktai</a></li></ul>
+  </nav>
+
+  <div class="layer sticker" id="outline"><img src="assets/full.webp" alt="Portretas"></div>
+  <div class="layer" id="mouth"><img src="assets/mouth.webp" alt=""></div>
+  <div class="layer" id="head"><img src="assets/head.webp" alt=""></div>
+  <div class="layer" id="jaw"><img src="assets/jaw.webp" alt=""></div>
+
+  <div class="marquee" aria-label="Klientai">
+    <div class="track" id="track"></div>
+  </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+(() => {
+  const stage = document.getElementById('stage');
+  const jawImg = document.querySelector('#jaw img');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- marquee: replace with your clients ---- */
+  const clients = ['Klientas Vienas', 'Prekės Ženklas', 'Studija Trys', 'Kampanija 2026', 'Brand Co'];
+  const row = clients.map((c, i) => `<span class="c${i % 4 + 1}">${c}</span>`).join('');
+  document.getElementById('track').innerHTML = row + row;
+
+  /* ---- card contents: swap for <video autoplay muted loop playsinline> of your work ---- */
+  const contents = [
+    { img: 'assets/c-eyes.webp', cap: 'Beauty reels' },
+    { cls: 't1', big: 'UGC<br>video', rec: true },
+    { img: 'assets/c-hand.webp', cap: 'Produkto kadrai' },
+    { cls: 't2', big: 'Brand<br>story' },
+    { img: 'assets/c-hair.webp', cap: 'Kampanija' },
+    { cls: 't3', big: '1,2 mln.<br>peržiūrų' },
+    { img: 'assets/c-sea.webp', cap: 'Kelionių turinys' },
+    { cls: 't4', big: 'TikTok<br>serija', rec: true },
+    { img: 'assets/c-full.webp', cap: 'Foto sesija' },
+    { cls: 't5', big: 'Kūrybinė<br>kryptis' },
+  ];
+
+  /* ---- slots: centre in % of the stage, alternating left / right, checked for zero overlap ---- */
+  const desktopSlots = [
+    { x: 14, y: 22, t: 'L' }, { x: 64, y: 20, t: 'L' },
+    { x: 6.5, y: 52, t: 'P' }, { x: 86, y: 30, t: 'P' },
+    { x: 33, y: 30, t: 'S' }, { x: 70, y: 50, t: 'L' },
+    { x: 22, y: 58, t: 'L' }, { x: 90, y: 62, t: 'S' },
+    { x: 40, y: 66, t: 'P' }, { x: 58, y: 74, t: 'P' },
+  ];
+  const mobileSlots = [
+    { x: 26, y: 60, t: 'L' }, { x: 74, y: 57, t: 'P' },
+    { x: 22, y: 80, t: 'P' }, { x: 70, y: 76, t: 'L' },
+  ];
+  const isMobile = matchMedia('(max-width: 720px)').matches;
+  const slotDefs = isMobile ? mobileSlots : desktopSlots;
+
+  const slots = slotDefs.map((s, i) => {
+    const el = document.createElement('div');
+    el.className = 'slot'; el.dataset.type = s.t;
+    el.style.left = s.x + '%'; el.style.top = s.y + '%';
+    stage.appendChild(el);
+    return { ...s, el, card: null, depth: 0.4 + (i % 3) * 0.3 };
+  });
+
+  const makeCard = (n) => {
+    const c = contents[n % contents.length];
+    const card = document.createElement('div');
+    card.className = 'card ' + (c.cls || '');
+    card.innerHTML = c.img
+      ? `<img src="${c.img}" alt=""><div class="cap">${c.cap}</div>`
+      : `${c.rec ? '<div class="rec">REC</div>' : ''}<div class="big">${c.big}</div>`;
+    return card;
+  };
+
+  // where things come out of, as fractions of the portrait image (646 x 568)
+  const MOUTH = { x: 238 / 646, y: 306 / 568 };
+  const CROWN = { x: 262 / 646, y: 70 / 568 };
+  const pointIn = (frac) => {
+    const r = document.getElementById('head').getBoundingClientRect();
+    const sr = stage.getBoundingClientRect();
+    return { x: r.left - sr.left + r.width * frac.x, y: r.top - sr.top + r.height * frac.y };
+  };
+
+  if (reduce) { slots.forEach((s, i) => { s.card = makeCard(i); s.el.appendChild(s.card); }); return; }
+
+  let n = 0;
+  const openJaw = () => {
+    const drop = document.getElementById('jaw').getBoundingClientRect().height * 0.016;
+    gsap.timeline()
+      .to(jawImg, { y: drop, rotation: -2, duration: 0.16, ease: 'power2.out' })
+      .to(jawImg, { y: 0, rotation: 0, duration: 0.32, ease: 'back.out(3)' }, '+=0.28');
+  };
+
+  const emit = () => {
+    const slot = slots[n % slots.length];
+    const fromHead = n % 3 === 2;           // every third card comes out of the top of the head
+    const card = makeCard(n);
+    n++;
+
+    // free the slot first, so cards never pile on top of each other
+    if (slot.card) {
+      const old = slot.card;
+      gsap.to(old, { scale: 0.6, opacity: 0, duration: 0.3, ease: 'power2.in', onComplete: () => old.remove() });
+    }
+    slot.card = card;
+
+    const src = pointIn(fromHead ? CROWN : MOUTH);
+    const sr = stage.getBoundingClientRect();
+    const tx = sr.width * slot.x / 100, ty = sr.height * slot.y / 100;
+    const dx = src.x - tx, dy = src.y - ty;
+    const arc = Math.min(sr.height * 0.16, 140) + (fromHead ? 40 : 0);
+    const tilt = (slot.x < 50 ? -1 : 1) * (2.5 + (n % 3) * 1.4);
+
+    slot.el.style.zIndex = fromHead ? 2 : 4;  // behind the head, or between head and jaw
+    slot.el.appendChild(card);
+    if (!fromHead) openJaw();
+
+    const p = { t: 0 };
+    gsap.set(card, { x: dx, y: dy, scale: 0.05, rotation: 0, opacity: 1 });
+    gsap.to(p, {
+      t: 1, duration: 1.15, delay: fromHead ? 0.06 : 0.2, ease: 'power3.out',
+      onUpdate() {
+        const t = p.t;
+        gsap.set(card, { x: dx * (1 - t), y: dy * (1 - t) - arc * Math.sin(Math.PI * Math.min(t * 1.15, 1)) * (1 - t * 0.6) });
+        if (t > (fromHead ? 0.45 : 0.18) && slot.el.style.zIndex !== '8') slot.el.style.zIndex = 8;
+      },
+      onComplete() { slot.el.style.zIndex = 7; }
+    });
+    gsap.timeline()
+      .to(card, { scale: 0.22, duration: 0.2, delay: 0.06, ease: 'power2.out' })   // peeks out of the mouth first
+      .to(card, { scale: 1, rotation: tilt, duration: 0.95, ease: 'back.out(1.5)' });
+  };
+
+  // gentle mouse parallax on the landed cards
+  if (!isMobile) {
+    stage.addEventListener('pointermove', (e) => {
+      const r = stage.getBoundingClientRect();
+      const mx = (e.clientX - r.left) / r.width - 0.5, my = (e.clientY - r.top) / r.height - 0.5;
+      slots.forEach(s => gsap.to(s.el, { x: -mx * 26 * s.depth, y: -my * 18 * s.depth, duration: 0.8, ease: 'power2.out', overwrite: 'auto' }));
+    });
+  }
+
+  emit();
+  const interval = isMobile ? 1500 : 1150;
+  let timer = setInterval(emit, interval);
+  document.addEventListener('visibilitychange', () => {
+    clearInterval(timer); if (!document.hidden) timer = setInterval(emit, interval);
+  });
+})();
+</script>
